@@ -34,15 +34,15 @@ class Blacklist(object):
     will be written to, seperated by newlines.
 
     '''
-    def __init__(self, ignore, backlog, bantime='7', threshold='10',
+    def __init__(self, backlog, ignore=None, bantime='7', threshold='10',
             output=None):
         if output is None or output == '-':
             self.outf = sys.stdout
         else:
             self.outf = open(output, 'w')
         self.backlog = backlog
-        self.ignores = parse_whitelist(open(ignore, 'r'))
-        _logger.debug('Whitelist: %s', ', '.join(self.ignores))
+        self.ignores = parse_whitelist(ignore)
+        _logger.debug('Whitelist: %s', ', '.join(self.ignores) or 'empty')
         self.hits = collections.defaultdict(lambda: [0,
                                         datetime.date.fromtimestamp(0)])
         self.threshold = int(threshold)
@@ -104,15 +104,17 @@ class Scanner(object):
             self._bl.record(*hit)
         self._bl.done()
 
-def parse_whitelist(f):
+def parse_whitelist(fname):
     '''Parse a white-list (ignore) file.
 
     The syntax for this file is: one host per line, empty lines or lines
     starting with a hash (#) are ignored. The file must be encoded in ASCII.
 
     '''
-    return frozenset(e for e in (l.strip() for l in f if l.strip()) if not
-            e.startswith('#'))
+    if fname is None:
+        return frozenset()
+    return frozenset(e for e in (l.strip() for l in open(fname, 'r') if
+            l.strip()) if not e.startswith('#'))
 
 def main():
     p = optparse.OptionParser()

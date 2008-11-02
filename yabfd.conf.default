@@ -5,24 +5,28 @@
 
 # Number of failed login attempts after which to blacklist an IP.
 # Default is five.
-threshold = 5
+;threshold = 5
 # Whitelist file (hosts listed in this file are never blacklisted). 
-ignore = whitelist.txt
-# File that the newline-seperated hosts list will be written to.
-output = hosts.deny.yabfd
+;ignore = whitelist.txt
+# File that the newline-seperated hosts list will be written to. To
+# output to stdout, specify - here. The default is stdout.
+;output = hosts.deny.yabfd
+# Log in which yabfd keeps track of 
 backlog = backlog.txt
 # Number of days to ban bruteforcers. Default is one week.
-bantime = 7
+;bantime = 7
 
-[parser_sshd]
-# Sample parser using regular expressions. The regexpparser can only
-# scan for one regular expression.
+[parser_syslog]
+# Sample parser using regular expressions.
 
 # The type of parser (all available parsers are in the parser/ dir).
 parser_type = regexpparser
 # The regular expression itself. Currently the `host' group is used to
 # extract the bruteforcing host from the match.
-regexp = ^(?P<date>\S+ \S+) \S+ \S+ sshd\[\d+\]: Failed password for .* from (?P<host>\S+) port \d+ ssh2?$
+regexp_1 = ^(?P<date>\S+ \S+) \S+ \S+ sshd\[\d+\]: Failed password for .* from (?P<host>\S+) port \d+ ssh2?$
+# You can specify as many regular expressions as you want:
+;regexp_2 = 
+;regexp_3 =
 # Format of the date string matched by the above regular expression
 # (passed to time.strptime()). See
 # <https://0brg.net/doc/Python-Docs-2.5/lib/module-time.html> for more
@@ -36,6 +40,6 @@ datefrmt = %%b %%d
 # the variable, a datetime.date() object). You can use it to tailor the
 # date to your needs. The datetime and time modules are imported.
 # This example sets the year to the current year.
-;datemodif = date = date.replace(year=datetime.datetime.today().year)
+datemodif = date = date.replace(year=datetime.datetime.today().year)
 # Space-seperated list of logfiles to match the regular expression on.
 logfiles = /var/log/auth.log /var/log/auth2.log
