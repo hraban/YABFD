@@ -1,0 +1,9 @@
+# Example whitelist for pyBFD. Hosts listed in this file will never be
+# blacklisted. One host per line. Whitespace and lines starting with #
+# are ignored.
+
+# You probably never want to block localhost.
+127.0.0.1
+
+# Example host on an internal network that should never be blocked.
+192.168.1.66
