@@ -5,11 +5,14 @@
 
 # Number of failed login attempts after which to blacklist an IP.
 # Default is five.
-limit = 30
+threshold = 5
 # Whitelist file (hosts listed in this file are never blacklisted). 
-ignore: whitelist.txt
+ignore = whitelist.txt
 # File that the newline-seperated hosts list will be written to.
-output: hosts.deny.pybfd
+output = hosts.deny.yabfd
+backlog = backlog.txt
+# Number of days to ban bruteforcers. Default is one week.
+bantime = 7
 
 [parser_sshd]
 # Sample parser using regular expressions. The regexpparser can only
@@ -17,8 +20,22 @@ output: hosts.deny.pybfd
 
 # The type of parser (all available parsers are in the parser/ dir).
 parser_type = regexpparser
-# The regular expression itself. Currently the `ip' group is used to
+# The regular expression itself. Currently the `host' group is used to
 # extract the bruteforcing host from the match.
-regexp = ^(?P<date>\S+ \S+ \S+) \S+ sshd\[\d+\]: Failed password for .* from (?P<ip>\S+) port \d+ ssh2?$
-# Comma-seperated list of logfiles to match the regular expression on.
-logfiles: /tmp/auth.log
+regexp = ^(?P<date>\S+ \S+) \S+ \S+ sshd\[\d+\]: Failed password for .* from (?P<host>\S+) port \d+ ssh2?$
+# Format of the date string matched by the above regular expression
+# (passed to time.strptime()). See
+# <https://0brg.net/doc/Python-Docs-2.5/lib/module-time.html> for more
+# information on the meaning of this string. Note that, because of the
+# syntax of this configuration file, literal percentage signs (%) must
+# be padded (i.e.: %%).
+datefrmt = %%b %%d
+# This an ugly hack, just in case the parsed time does not provide
+# enough information (as is the case with syslog.. blegh). This line of
+# python code is executed after parsing the date (date is the name of
+# the variable, a datetime.date() object). You can use it to tailor the
+# date to your needs. The datetime and time modules are imported.
+# This example sets the year to the current year.
+;datemodif = date = date.replace(year=datetime.datetime.today().year)
+# Space-seperated list of logfiles to match the regular expression on.
+logfiles = /var/log/auth.log /var/log/auth2.log
