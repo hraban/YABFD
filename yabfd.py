@@ -113,8 +113,13 @@ def parse_whitelist(fname):
     '''
     if fname is None:
         return frozenset()
-    return frozenset(e for e in (l.strip() for l in open(fname, 'r') if
-            l.strip()) if not e.startswith('#'))
+    try:
+        f = open(fname, 'r')
+    except IOError, e:
+        _logger.warning('Unable to open the whitelist (%s), continuing.', e)
+        return frozenset()
+    return frozenset(e for e in (l.strip() for l in f if l.strip()) if not
+            e.startswith('#'))
 
 def main():
     p = optparse.OptionParser()
