@@ -19,6 +19,7 @@ import optparse
 import re
 import sys
 
+DEFAULT_IGNORE_PATH = '/usr/local/etc/yabfd.whitelist.txt'
 LOGFORMAT = '%(asctime)s %(levelname)s: %(message)s'
 LOGDATEFMT = '%c'
 
@@ -34,19 +35,22 @@ class Blacklist(object):
     will be written to, seperated by newlines.
 
     '''
-    def __init__(self, backlog, ignore=None, bantime='7', threshold='10',
-            output=None):
-        if output is None or output == '-':
+    def __init__(self, backlog, ignore=None, bantime=7, threshold=10,
+            output='-'):
+        if output == '-':
             self.outf = sys.stdout
         else:
             self.outf = open(output, 'w')
         self.backlog = backlog
-        self.ignores = parse_whitelist(ignore)
+        if ignore is not None:
+            self.ignores = parse_whitelist(ignore)
+        else:
+            self.ignores = frozenset()
         _logger.debug('Whitelist: %s', ', '.join(self.ignores) or 'empty')
         self.hits = collections.defaultdict(lambda: [0,
                                         datetime.date.fromtimestamp(0)])
-        self.threshold = int(threshold)
-        self.bantime = datetime.timedelta(int(bantime))
+        self.threshold = threshold
+        self.bantime = datetime.timedelta(bantime)
 
     def done(self):
         '''Called when all hits are recorded.'''
@@ -61,12 +65,12 @@ class Blacklist(object):
         blw = csv.writer(open(self.backlog, 'wb'))
         for host, (numhits, date) in self.hits.iteritems():
             tilld = date + self.bantime
+            # This number of failed login attempts is allowed:
             if (numhits < self.threshold or
-                    # This number of failed login attempts is allowed.
+                    # Whitelisted:
                     host in self.ignores or
-                    # Whitelisted.
+                    # Most recent offense makes banning worthwile:
                     tilld < datetime.date.today()
-                    # Most recent offense makes banning worthwile.
                     ):
                 continue
             till = tilld.isoformat()
@@ -84,7 +88,11 @@ class Blacklist(object):
 
 class Scanner(object):
     def __init__(self, conffile):
-        config = ConfigParser.SafeConfigParser()
+        self._read_config(conffile)
+
+    def _read_config(self, conffile):
+        config = ConfigParser.SafeConfigParser(defaults={'ignore':
+                DEFAULT_IGNORE_PATH})
         if not config.read(conffile):
             _logger.warning('Failed to read %s, skipping.', conffile)
         self._parsers = []
@@ -92,10 +100,19 @@ class Scanner(object):
             ptype = config.get(sec, 'parser_type')
             config.remove_option(sec, 'parser_type')
             self.add_parser(ptype, dict(config.items(sec)))
-        self._bl = Blacklist(**dict(config.items('blacklist')))
+        kwargs = dict(config.items('blacklist'))
+        # Transform all integer values to `int`s.
+        for opt in ('bantime', 'threshold'):
+            if opt in kwargs:
+                try:
+                    kwargs[opt] = config.getint('blacklist', opt)
+                except ValueError:
+                    _logger.error('Invalid %s: "%s".', opt, kwargs[opt])
+                    raise
+        self._bl = Blacklist(**kwargs)
 
     def add_parser(self, parsertype, kwargs):
-        p = getattr(__import__('parser.' + parsertype),
+        p = getattr(__import__('parsers.' + parsertype),
                 parsertype).Parser(**kwargs)
         self._parsers.append(p)
 
@@ -111,8 +128,6 @@ def parse_whitelist(fname):
     starting with a hash (#) are ignored. The file must be encoded in ASCII.
 
     '''
-    if fname is None:
-        return frozenset()
     try:
         f = open(fname, 'r')
     except IOError, e:

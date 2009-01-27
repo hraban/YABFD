@@ -4,7 +4,7 @@ import logging
 import re
 import time
 
-from parser import BaseParser
+from parsers import BaseParser
 
 _logger = logging.getLogger('yabfd' + __name__)
 
