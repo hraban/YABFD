@@ -16,6 +16,7 @@ import datetime
 import itertools
 import logging
 import optparse
+import os
 import re
 import shutil
 import sys
