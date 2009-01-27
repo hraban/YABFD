@@ -60,12 +60,18 @@ class Blacklist(object):
         succesfully read is not discarded. Reading is, at this point, stopped,
         though, and False is returned.
 
+        If the file does not exist True is returned. If it does exist but
+        reading it fails False is returned.
+
         '''
         try:
             r = csv.reader(open(self.backlog, 'rb'))
         except IOError, e:
-            _logger.warning('Unable to read backlog (%s), continuing.', e)
-            return False
+            if os.path.exists(self.backlog):
+                return True
+            else:
+                _logger.warning('Unable to read backlog (%s), continuing.', e)
+                return False
         try:
             for (host, till) in r:
                 # Parse the ISO 8601 format into a datetime.date object.
