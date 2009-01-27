@@ -68,7 +68,7 @@ class Blacklist(object):
         try:
             r = csv.reader(open(self.backlog, 'rb'))
         except IOError, e:
-            if os.path.exists(self.backlog):
+            if not os.path.exists(self.backlog):
                 return True
             else:
                 _logger.warning('Unable to read backlog (%s), continuing.', e)
