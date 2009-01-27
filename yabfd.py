@@ -17,6 +17,7 @@ import itertools
 import logging
 import optparse
 import re
+import shutil
 import sys
 
 DEFAULT_IGNORE_PATH = '/usr/local/etc/yabfd.whitelist.txt'
@@ -52,16 +53,41 @@ class Blacklist(object):
         self.threshold = threshold
         self.bantime = datetime.timedelta(bantime)
 
+    def _read_old_backlog(self):
+        '''Returns True if the entire backlog was properly read.
+
+        If an error occurs somewhere in the middle the data that was
+        succesfully read is not discarded. Reading is, at this point, stopped,
+        though, and False is returned.
+
+        '''
+        try:
+            r = csv.reader(open(self.backlog, 'rb'))
+        except IOError, e:
+            _logger.warning('Unable to read backlog (%s), continuing.', e)
+            return False
+        try:
+            for (host, till) in r:
+                # Parse the ISO 8601 format into a datetime.date object.
+                tilld = datetime.datetime.strptime(till, '%Y-%m-%d').date()
+                # Only overwrite latest offense read if backlog has even more
+                # recent data.
+                date = max(tilld - self.bantime, self.hits[host][1])
+                self.hits[host] = [self.threshold, date]
+        except ValueError, e:
+            _logger.warning('Corrupt backlog (line %d: %s), continuing without'
+                    ' reading the rest.', r.line_num, e)
+            return False
+        else:
+            return True
+
     def done(self):
         '''Called when all hits are recorded.'''
         # Read all current bans.
-        try:
-            for host, till in csv.reader(open(self.backlog, 'rb')):
-                # Parse the ISO 8601 format into a datetime.date object.
-                tilld = datetime.datetime.strptime(till, '%Y-%m-%d').date()
-                self.hits[host] = (self.threshold, tilld - self.bantime)
-        except IOError, e:
-            _logger.warning('Unable to read backlog (%s), continuing.', e)
+        if not self._read_old_backlog():
+            _logger.info('Reading backlog failed, saving old backlog as '
+                                                ' "%s.corrupt".', self.backlog)
+            shutil.move(self.backlog, self.backlog + '.corrupt')
         blw = csv.writer(open(self.backlog, 'wb'))
         for host, (numhits, date) in self.hits.iteritems():
             tilld = date + self.bantime

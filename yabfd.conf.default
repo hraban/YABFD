@@ -40,6 +40,6 @@ datefrmt = %%b %%d
 # the variable, a datetime.date() object). You can use it to tailor the
 # date to your needs. The datetime and time modules are imported.
 # This example sets the year to the current year.
-datemodif = date = date.replace(year=datetime.datetime.today().year)
+datemodif: date = date.replace(year=datetime.datetime.today().year)
 # Space-seperated list of logfiles to match the regular expression on.
 logfiles = /var/log/auth.log /var/log/auth2.log
