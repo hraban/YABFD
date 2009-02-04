@@ -1,4 +1,4 @@
-# Example whitelist for pyBFD. Hosts listed in this file will never be
+# Example whitelist for YABFD. Hosts listed in this file will never be
 # blacklisted. One host per line. Whitespace and lines starting with #
 # are ignored.
 

@@ -30,7 +30,7 @@ class Parser(BaseParser):
                     continue
                 date = datetime.datetime.strptime(m.group('date'),
                         self.datefrmt).date()
-                exec self.datemodif
+                exec(self.datemodif)
                 yield (date, m.group('host'))
                 # No need to try other rexes on this line.
                 break
