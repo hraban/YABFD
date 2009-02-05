@@ -2,7 +2,7 @@ import collections
 import logging
 import itertools
 
-_logger = logging.getLogger('yabfd' + __name__)
+_logger = logging.getLogger('yabfd.' + __name__)
 
 class BaseParser(object):
     '''Baseclass for all parsers.
@@ -11,9 +11,13 @@ class BaseParser(object):
     a single logfile.
 
     '''
-    def __init__(self):
+    def __init__(self, name):
         self._logs = collections.deque()
+        self.name = name
         _logger.debug('Created parser %s.', self)
+
+    def __str__(self):
+        return 'parser_' + self.name
 
     def load_logs(self, logs):
         self._logs.extend(logs)

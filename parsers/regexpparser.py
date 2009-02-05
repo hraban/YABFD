@@ -6,22 +6,21 @@ import time
 
 from parsers import BaseParser
 
-_logger = logging.getLogger('yabfd' + __name__)
+_logger = logging.getLogger('yabfd.' + __name__)
 
 class Parser(BaseParser):
-    def __init__(self, logfiles, datefrmt, datemodif="", **kwa):
-        super(Parser, self).__init__()
+    def __init__(self, logfiles, name, datefrmt, datemodif="", **kwa):
+        super(Parser, self).__init__(name)
         self._r = collections.deque(re.compile(v) for v in kwa.itervalues())
         self._ips = []
-        self.load_logs(e.strip() for e in logfiles.split())
+        self.logfiles = logfiles
+        self.kwargs = kwa
+        self.load_logs(e.strip() for e in logfiles.split() if e.strip())
         self.datefrmt = datefrmt
         self.datemodif = datemodif
 
-    def __str__(self):
-        return 'regexpparser'
-
     def _parse(self, log):
-        _logger.debug('%s parsing %s.', self, log)
+        _logger.debug('%s parsing %r.', self, log)
         hits = collections.defaultdict(lambda: 0)
         for l in open(log, 'r'):
             for rex in self._r:
@@ -34,3 +33,4 @@ class Parser(BaseParser):
                 yield (date, m.group('host'))
                 # No need to try other rexes on this line.
                 break
+        _logger.debug('%s done parsing %r.', self, log)

@@ -23,7 +23,7 @@ backlog = backlog.txt
 parser_type = regexpparser
 # The regular expression itself. Currently the `host' group is used to
 # extract the bruteforcing host from the match.
-regexp_1 = ^(?P<date>\S+ \S+) \S+ \S+ sshd\[\d+\]: Failed password for .* from (?P<host>\S+) port \d+ ssh2?$
+regexp_1 = ^(?P<date>\S+ +\S+) \S+ \S+ sshd\[\d+\]: Failed password for .* from (?P<host>\S+) port \d+ ssh2?$
 # You can specify as many regular expressions as you want:
 ;regexp_2 = 
 ;regexp_3 =
@@ -43,3 +43,11 @@ datefrmt = %%b %%d
 datemodif: date = date.replace(year=datetime.datetime.today().year)
 # Space-seperated list of logfiles to match the regular expression on.
 logfiles = /var/log/auth.log /var/log/auth2.log
+
+[printer_hostsdeny]
+# Sample printer that lists every bad host on a seperate line in a file.
+
+# The type of printer (all available printers are in the printer/ dir).
+printer_type = simplelist
+# The file to store the bad hosts to.
+destfile = /etc/hosts.deny.yabfd
