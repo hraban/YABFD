@@ -42,8 +42,7 @@ class Blacklist(object):
     track of when hosts must be unbanned.
 
     '''
-    def __init__(self, backlog, ignore=None, prebanned=None, bantime=7,
-            threshold=10):
+    def __init__(self, backlog, ignore=None, bantime=7, threshold=10):
         self.backlog = backlog
         if ignore is not None:
             self.ignores = parse_whitelist(ignore)
@@ -114,7 +113,7 @@ class Blacklist(object):
         try:
             self._read_old_backlog()
         except _BacklogError, e:
-            _logger.warning('Reading backlog failed: %s', e)
+            _logger.error('Reading backlog failed: %s', e)
             _logger.warning('Saving old (corrupt) backlog as "%s.corrupt"',
                     self.backlog)
             shutil.move(self.backlog, self.backlog + '.corrupt')
@@ -124,10 +123,16 @@ class Blacklist(object):
         del self.ignores
         _logger.debug('%s done.', self)
 
-    def record(self, date, host):
-        '''A failed login attempt from this host has been found.'''
+    def record(self, date, host, weight=1):
+        '''A failed login attempt from this host has been found.
+
+        The weight operand is a multiplier for the encountered hit. It allows
+        the caller to make some hits more severe than others without calling
+        record() repeatedly.
+
+        '''
         h = self.hits[host]
-        h[0] += 1
+        h[0] += weight
         h[1] = max(h[1], date)
 
 class Scanner(object):

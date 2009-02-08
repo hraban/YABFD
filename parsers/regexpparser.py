@@ -21,7 +21,6 @@ class Parser(BaseParser):
 
     def _parse(self, log):
         _logger.debug('%s parsing %r.', self, log)
-        hits = collections.defaultdict(lambda: 0)
         for l in open(log, 'r'):
             for rex in self._r:
                 m = rex.search(l)

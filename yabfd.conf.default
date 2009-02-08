@@ -2,23 +2,20 @@
 
 [blacklist]
 # Configuration directives for the blacklisting process in general.
-
+#
 # Number of failed login attempts after which to blacklist an IP.
 # Default is five.
 ;threshold = 5
 # Whitelist file (hosts listed in this file are never blacklisted). 
 ;ignore = whitelist.txt
-# File that the newline-seperated hosts list will be written to. To
-# output to stdout, specify - here. The default is stdout.
-;output = hosts.deny.yabfd
-# Log in which yabfd keeps track of 
+# Log in which yabfd keeps track of bans across different runs.
 backlog = backlog.txt
 # Number of days to ban bruteforcers. Default is one week.
 ;bantime = 7
 
 [parser_syslog]
 # Sample parser using regular expressions.
-
+#
 # The type of parser (all available parsers are in the parser/ dir).
 parser_type = regexpparser
 # The regular expression itself. Currently the `host' group is used to
@@ -42,12 +39,28 @@ datefrmt = %%b %%d
 # This example sets the year to the current year.
 datemodif: date = date.replace(year=datetime.datetime.today().year)
 # Space-seperated list of logfiles to match the regular expression on.
-logfiles = /var/log/auth.log /var/log/auth2.log
+logfiles = /var/log/auth.log /var/log/auth.log.1
+
+[parser_mybanlist]
+# Sample parser for a custom blacklist.
+#
+parser_type = customblacklist
+# The CSV file in which all custom bans are listed. Syntax of the file
+# is two-element CSV: ip-address,date. Date must be in YYYY-MM-DD form.
+# The date is interpreted as if it were the date of this host's latest
+# "offense". In other words, it will cause a host to be banned until the
+# listed date + the blacklist's bantime.
+blacklist = myblacklist.csv
+# This value influences the weight of being listed in the blacklist.
+# Setting this lower than the blacklist's threshold means that being
+# listed here will not cause a ban in itself. The default is a pretty
+# large value.
+;hitweight = 99999
 
 [printer_hostsdeny]
 # Sample printer that lists every bad host on a seperate line in a file.
-
+#
 # The type of printer (all available printers are in the printer/ dir).
 printer_type = simplelist
-# The file to store the bad hosts to.
+# The file to store the bad hosts to. Use - for stdout.
 destfile = /etc/hosts.deny.yabfd
