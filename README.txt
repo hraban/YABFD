@@ -30,7 +30,7 @@
 
 ==Usage==
 
-  All the configuration options are explained in the yabfd.conf.default
+  All the configuration options are explained in the yabfd.conf.example
   file. The usage options are explained in the help message yielded by
   running yabfd with the --help option.
 
