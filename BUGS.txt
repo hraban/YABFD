@@ -1,0 +1,17 @@
+There are some bugs in YABFD that you should be aware of if you want to
+use it:
+
+* Locking: The program does not check whether another yabfd process is
+  already running. Whether or not this is YABFD's responsibility at all
+  is debatable. Regardless, before setting up a cronjob to run this
+  program every x minutes, make sure that it does not start if another
+  instance is still running. This will create a cascade of processes
+  that will eventually clog up your system (best-case: no more
+  brute-force detection, worst-case: DOS).
+* Integrity: The code base is rarely tested. The little testing that
+  does take place is just some manual see-if-it-works, no unit-tests, no
+  QA whatsoever. Beware!
+* Syslog: Parsing (default) syslog logs is a drag, mainly because of the
+  year-issue. Syslog does not log in which year an event takes place, so
+  it needs to be hacked around. See the configuration file for more
+  info.

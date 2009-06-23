@@ -62,6 +62,11 @@
   "fail-fast" style, meaning that if an unexpected error occurs it just
   crashes.
 
+== Bugs ==
+
+  Don't forget to check BUGS.txt for the bugs that you should know
+  about.
+
 If something is unclear or if something goes wrong, do not hesitate to
 contact me.
 
