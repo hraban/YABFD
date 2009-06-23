@@ -22,7 +22,7 @@
   run YABFD, and compare it to the same hash afterwards. For example, to
   restart Squid based on updates to the banlist (all on one line):
 
-  * * * * * crc=`cksum /etc/hosts.deny.yabfd` ; /usr/local/yabfd/yabfd ; sort -n -t . -k 1,1 -k 2,2 -k 3,3 -k 4,4 -o /etc/hosts.deny.yabfd /etc/hosts.deny.yabfd ; if [ "$crc" != "$(cksum /etc/hosts.deny.yabfd)" ] ; then /etc/init.d/squid reload ; fi
+  * * * * * crc=`cksum /etc/hosts.deny.yabfd` ; /usr/local/yabfd/yabfd ; sort -o /etc/hosts.deny.yabfd /etc/hosts.deny.yabfd ; if [ "$crc" != "$(cksum /etc/hosts.deny.yabfd)" ] ; then /etc/init.d/squid reload ; fi
 
   The sorting is necessary because YABFD's output is not sorted.
   Therefore the same blacklist can have different hashes across
