@@ -29,7 +29,8 @@ regexp_1 = ^(?P<date>\S+ +\S+) \S+ \S+ sshd\[\d+\]: Failed password for .* from 
 # <https://0brg.net/doc/Python-Docs-2.5/lib/module-time.html> for more
 # information on the meaning of this string. Note that, because of the
 # syntax of this configuration file, literal percentage signs (%) must
-# be padded (i.e.: %%).
+# be padded (i.e.: %%). Note that if the date fails to parse it will be
+# assumed to be a hit (i.e.: rather false positive than false negative).
 datefrmt = %%b %%d
 # This an ugly hack, just in case the parsed time does not provide
 # enough information (as is the case with syslog.. blegh). This line of
@@ -46,15 +47,16 @@ logfiles = /var/log/auth.log /var/log/auth.log.1
 #
 parser_type = customblacklist
 # The CSV file in which all custom bans are listed. Syntax of the file
-# is two-element CSV: ip-address,date. Date must be in YYYY-MM-DD form.
-# The date is interpreted as if it were the date of this host's latest
+# is two-element CSV: host,date. Date must be in YYYY-MM-DD form.  The
+# date is interpreted as if it were the date of this host's latest
 # "offense". In other words, it will cause a host to be banned until the
-# listed date + the blacklist's bantime.
+# listed date + the blacklist's bantime. An optional third element in
+# the entry is a weight-factor (host,date,weight).
 blacklist = myblacklist.csv
-# This value influences the weight of being listed in the blacklist.
-# Setting this lower than the blacklist's threshold means that being
-# listed here will not cause a ban in itself. The default is a pretty
-# large value.
+# This value influences the default weight of being listed in the
+# blacklist.  Setting this lower than the blacklist's threshold means
+# that being listed here will not cause a ban in itself. The default is
+# a pretty large value.
 ;hitweight = 99999
 
 [printer_hostsdeny]

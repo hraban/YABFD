@@ -3,9 +3,12 @@
 Can be included by /etc/hosts.deny and Squid, for example.
 
 '''
+import logging
 import sys
 
 from printers import BasePrinter
+
+_logger = logging.getLogger('yabfd')
 
 class Printer(BasePrinter):
     def __init__(self, name, destfile='-', newline='\n'):
@@ -13,7 +16,13 @@ class Printer(BasePrinter):
         if destfile == '-':
             self.outf = sys.stdout
         else:
-            self.outf = open(destfile, 'wt')
+            try:
+                self.outf = open(destfile, 'wt')
+            except IOError, e:
+                _logger.error('Error while opening the file to save the ban-list'
+                              ' to. Details: %r', e)
+                # Continue as a generic error.
+                raise RuntimeError, 'Banlist can not be saved.'
         self.destfile = destfile
         self.nl = newline
 

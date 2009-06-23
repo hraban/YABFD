@@ -2,6 +2,7 @@ import collections
 import datetime
 import logging
 import re
+import sys
 import time
 
 from parsers import BaseParser
@@ -21,13 +22,22 @@ class Parser(BaseParser):
 
     def _parse(self, log):
         _logger.debug('%s parsing %r.', self, log)
-        for l in open(log, 'r'):
+        f = open(log, 'r') if log != '-' else sys.stdin
+        for l in f:
             for rex in self._r:
                 m = rex.search(l)
                 if m is None:
                     continue
-                date = datetime.datetime.strptime(m.group('date'),
-                        self.datefrmt).date()
+                try:
+                    dto = datetime.datetime.strptime(m.group('date'),
+                            self.datefrmt)
+                except ValueError:
+                    date = datetime.date.today()
+                    _logger.warning('Could not parse %r as %r, assuming one hit'
+                            ' on %r (today) for %r.', m.group('date'),
+                            self.datefrmt, date, m.group('host'))
+                else:
+                    date = dto.date()
                 exec(self.datemodif)
                 yield (date, m.group('host'))
                 # No need to try other rexes on this line.

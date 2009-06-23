@@ -48,7 +48,7 @@ class Blacklist(object):
             self.ignores = parse_whitelist(ignore)
         else:
             self.ignores = frozenset()
-        _logger.debug('Whitelist: %s', ', '.join(self.ignores) or 'empty')
+        _logger.debug('Whitelist contains %d hosts.', len(self.ignores))
         self.hits = collections.defaultdict(lambda: [0,
                                         datetime.date.fromtimestamp(0)])
         self.threshold = threshold
@@ -57,6 +57,11 @@ class Blacklist(object):
         self._done_lock = _threading.Lock()
 
     def __iter__(self):
+        # Just noting: this is not thread-safe: one thread acquires the lock for
+        # testing, another thread tries the same thing at the same time but sees
+        # it is unlocked and passes the conditional, the former thread now
+        # releases the lock and raises the exception, but the second thread is
+        # already writing to the backlog. Would require a lock-testing-lock :)
         if self._done_lock.acquire(False):
             self._done_lock.release()
             raise RuntimeError, "Call a Blacklist's done() before __iter__()."
@@ -121,7 +126,7 @@ class Blacklist(object):
         for ignore in self.ignores:
             self.hits.pop(ignore, None)
         del self.ignores
-        _logger.debug('%s done.', self)
+        _logger.debug('Blacklist is done processing.')
 
     def record(self, date, host, weight=1):
         '''A failed login attempt from this host has been found.
@@ -140,14 +145,24 @@ class Scanner(object):
     def __init__(self, conffile):
         self._parsers = []
         self._printers = []
-        self._read_config(conffile)
+        try:
+            self._read_config(conffile)
+        except Exception, e:
+            _logger.error('Reading configuration at %r failed. Details: %r',
+                    conffile, e)
+            # Continue as a generic error (hide underlying details from error
+            # reporting higher up).
+            raise RuntimeError, ('Scanner had trouble reading the configuration'
+                                ' file.')
+        else:
+            _logger.debug('Scanner read configuration at %r.', conffile)
 
     def _read_config(self, conffile):
         config = ConfigParser.SafeConfigParser()
-        if not config.read(conffile):
-            _logger.error('Failed to read configuration at "%s".', conffile)
-            # Not a very appropriate exception but at this point: who cares.
-            raise RunTimeError, 'Failed to read configuration.'
+        # Using open() manually here will cause an exception if the file can not
+        # be opened. This is wanted, as opposed to config.read's (not readfp())
+        # default behaviour of silently ignoring files that can not be opened.
+        config.readfp(open(conffile))
         for sec in config.sections():
             if sec.startswith('parser_'):
                 ptype = config.get(sec, 'parser_type')
@@ -168,7 +183,7 @@ class Scanner(object):
                 try:
                     kwargs[opt] = config.getint('blacklist', opt)
                 except ValueError:
-                    _logger.error('Invalid %s: "%s".', opt, kwargs[opt])
+                    _logger.error('Invalid %s: %r.', opt, kwargs[opt])
                     raise
         self._bl = Blacklist(**kwargs)
 
@@ -238,8 +253,13 @@ def main():
             datefmt=LOGDATEFMT)
     if options.loglevel <= logging.INFO:
         print >> sys.stderr, __doc__
-    s = Scanner(options.file)
-    s.scan()
+    try:
+        s = Scanner(options.file)
+    except Exception, e:
+        _logger.error('Creating the scanner failed, aborting. Details: %r', e)
+        sys.exit('Aborting operation.')
+    else:
+        s.scan()
 
 if __name__ == '__main__':
     main()
