@@ -63,8 +63,9 @@
   YABFD itself is still in an early development stage. Commits to the
   svn trunk/ are not tested thoroughly and the overall integrity of the
   system has never been checked either. The code was written in a
-  "fail-fast" style, meaning that if an unexpected error occurs it just
-  crashes.
+  "fail-fast", "pessimistic" style. If an error occurs that could only
+  cause false positives (more bans than necessary), it is only logged.
+  If an error could cause false negatives, the program crashes a.s.a.p.
 
 == Bugs ==
 

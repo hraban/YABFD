@@ -19,7 +19,7 @@ class BasePrinter(object):
 
     def close(self):
         '''Called when all printing is done.'''
-        _logger.debug('Closing printer %s', self)
+        _logger.debug('Closing printer %s.', self)
 
     def print_(self, badhost, banned_till):
         raise NotImplementedError

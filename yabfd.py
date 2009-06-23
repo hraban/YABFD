@@ -197,7 +197,13 @@ class Scanner(object):
         self._printers.append(p)
 
     def scan(self):
-        '''Parse and process all logfiles.'''
+        '''Parse and process all logfiles.
+        
+        If an error occurs with one of the printers, it is logged, then ignored
+        while the other printers try to finish and finally re-raised at the end.
+        
+        '''
+        error = None
         for p in self._parsers:
             for hit in p.parse():
                 self._bl.record(*hit)
@@ -206,11 +212,24 @@ class Scanner(object):
         for entry in self._bl:
             _logger.info('Banning %s until %s.', entry[0], entry[1])
             for printer in self._printers:
-                printer.print_(*entry)
-        # Clean up printers.
+                try:
+                    printer.print_(*entry)
+                except Exception, e:
+                    _logger.error('Printer %s could not print %r. Details: %r',
+                            printer, entry, e)
+                    error = 'One or more printjobs failed.'
+        # Clean up printers (as much as possible).
         for printer in self._printers:
-            printer.close()
+            try:
+                printer.close()
+            except Exception, e:
+                _logger.error('Closing printer %s failed. Details: %r', printer,
+                        e)
+                # Yes, this will override the other error, but the logs are OK.
+                error = 'One or more printers did not close properly.'
         del self._printers
+        if error is not None:
+            raise RuntimeError, 
 
 def parse_whitelist(fname):
     '''Parse a white-list (ignore) file.
@@ -255,8 +274,11 @@ def main():
     except Exception, e:
         _logger.error('Creating the scanner failed, aborting. Details: %r', e)
         sys.exit('Aborting operation.')
-    else:
+    try:
         s.scan()
+    except Exception, e:
+        _logger.error('Scanner crashed half-way through. Details: %r', e)
+        sys.exit('Halting operation.')
 
 if __name__ == '__main__':
     main()
