@@ -14,7 +14,7 @@ class BaseParser(object):
     def __init__(self, name):
         self._logs = collections.deque()
         self.name = name
-        _logger.debug('Created parser %s.', self)
+        _logger.debug('Created %s.', self)
 
     def __str__(self):
         return 'parser_' + self.name

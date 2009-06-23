@@ -36,7 +36,11 @@
 
 ==Banning==
 
-  For now YABFD can only output blacklists as a newline seperated list
+  YABFD's output can be stored by using "printers". The example
+  configuration file details which printers exist and how to use them.
+  You can combine several printers, or use none at all, if you wish.
+
+  For example, YABFD can output blacklists as a newline seperated list
   of IP addresses. Some programs can deal with this, some can not. The
   TCP wrapper service, for example, can. You can use the list by putting
   this in your /etc/hosts.deny:

@@ -57,7 +57,7 @@ class Blacklist(object):
         self._done_lock = _threading.Lock()
 
     def __iter__(self):
-        # Just noting: this is not thread-safe: one thread acquires the lock for
+        # Just noting: this is not thread-safe. One thread acquires the lock for
         # testing, another thread tries the same thing at the same time but sees
         # it is unlocked and passes the conditional, the former thread now
         # releases the lock and raises the exception, but the second thread is
@@ -71,11 +71,10 @@ class Blacklist(object):
             # This number of failed login attempts is allowed:
             if (numhits >= self.threshold and
                     # Most recent offense makes banning worthwile:
-                    tilld > datetime.date.today()
+                    tilld > datetime.date.today() # profile. bottleneck? cache!
                     ):
-                till = tilld.isoformat()
-                blw.writerow((host, till))
-                yield (host, till)
+                blw.writerow((host, tilld.isoformat()))
+                yield (host, tilld)
 
     def _read_old_backlog(self):
         '''Read the old bans and reapply them if appropriate.
@@ -191,13 +190,11 @@ class Scanner(object):
         p = getattr(__import__('parsers.' + parsertype),
                 parsertype).Parser(**kwargs)
         self._parsers.append(p)
-        _logger.debug('Added parser: ' + str(p))
 
     def add_printer(self, printertype, kwargs):
         p = getattr(__import__('printers.' + printertype),
                 printertype).Printer(**kwargs)
         self._printers.append(p)
-        _logger.debug('Added printer: ' + str(p))
 
     def scan(self):
         '''Parse and process all logfiles.'''

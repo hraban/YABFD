@@ -11,7 +11,7 @@ from printers import BasePrinter
 _logger = logging.getLogger('yabfd')
 
 class Printer(BasePrinter):
-    def __init__(self, name, destfile='-', newline='\n'):
+    def __init__(self, name, destfile='-', newline=r'\n'):
         super(Printer, self).__init__(name)
         if destfile == '-':
             self.outf = sys.stdout
@@ -24,7 +24,7 @@ class Printer(BasePrinter):
                 # Continue as a generic error.
                 raise RuntimeError, 'Banlist can not be saved.'
         self.destfile = destfile
-        self.nl = newline
+        self.nl = eval('"%s"' % newline)
 
     def __repr__(self):
         return '%s.Printer(%r, %r)' % (__name__, self.destfile, self.nl)

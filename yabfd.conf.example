@@ -66,3 +66,20 @@ blacklist = myblacklist.csv
 printer_type = simplelist
 # The file to store the bad hosts to. Use - for stdout.
 destfile = /etc/hosts.deny.yabfd
+# The line-ending to use.
+newline = \n
+
+[printer_mediawikilist]
+# Sample printer for a mediawiki-formatted list.
+#
+# A formattedlist printer is much like a simplelist printer, with one
+# added feature: you can define your own string formatting for the
+# output.
+printer_type = formattedlist
+destfile = /tmp/list.wiki
+newline = \n
+# The available keys are: %(host)s (the host) and %(till)s (until what
+# time the host is banned). As with datefrmt, escape the %.
+format = * %%(host)s is banned until %%(till)s.
+# This will give you a line like this for every host:
+# * 12.34.56.78 is banned until 2036-12-31.

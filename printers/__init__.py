@@ -12,6 +12,7 @@ _logger = logging.getLogger('yabfd.' + __name__)
 class BasePrinter(object):
     def __init__(self, name):
         self.name = name
+        _logger.debug('Created %s.', self)
 
     def __str__(self):
         return 'printer_' + self.name
