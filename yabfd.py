@@ -229,7 +229,7 @@ class Scanner(object):
                 error = 'One or more printers did not close properly.'
         del self._printers
         if error is not None:
-            raise RuntimeError, 
+            raise RuntimeError, error
 
 def parse_whitelist(fname):
     '''Parse a white-list (ignore) file.
