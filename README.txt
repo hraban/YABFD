@@ -9,8 +9,8 @@
 
 ==Installation==
 
-  To install YABFD, checkout the source with subversion (`svn co
-  https://0brg.net/svn/yabfd/trunk/`), create a configuration file and
+  To install YABFD, checkout the source with git (`git checkout
+  https://github.com/hraban/YABFD.git`), create a configuration file and
   run the `yabfd` script whenever you want to scan logfiles and update
   your blacklist. This can be done by putting yabfd in your crontab, for
   example:
@@ -18,9 +18,10 @@
   * * * * * /usr/local/yabfd/yabfd
 
   There are various ways to detect whether or not the blacklist was
-  modified. One way is to create an md5sum or crc of the file before you
-  run YABFD, and compare it to the same hash afterwards. For example, to
-  restart Squid based on updates to the banlist (all on one line):
+  modified. One way is to create a fingerprint of the file before you
+  run YABFD, fingerprint again afterwards and compare the two. For
+  example, to restart Squid based on updates to the banlist (all on one
+  line):
 
   * * * * * crc=`cksum /etc/hosts.deny.yabfd` ; /usr/local/yabfd/yabfd ; sort -o /etc/hosts.deny.yabfd /etc/hosts.deny.yabfd ; if [ "$crc" != "$(cksum /etc/hosts.deny.yabfd)" ] ; then /etc/init.d/squid reload ; fi
 
@@ -61,11 +62,12 @@
   depends on your needs.
 
   YABFD itself is still in an early development stage. Commits to the
-  svn trunk/ are not tested thoroughly and the overall integrity of the
-  system has never been checked either. The code was written in a
-  "fail-fast", "pessimistic" style. If an error occurs that could only
-  cause false positives (more bans than necessary), it is only logged.
-  If an error could cause false negatives, the program crashes a.s.a.p.
+  development version are not tested thoroughly and the overall
+  integrity of the system has never been checked either. The code was
+  written in a "fail-fast", "pessimistic" style. If an error occurs that
+  could only cause false positives (more bans than necessary), it is
+  only logged. If an error could cause false negatives, the program
+  crashes a.s.a.p.
 
 == Bugs ==
 
